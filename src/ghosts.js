@@ -1,6 +1,7 @@
 import {clamp} from './vacuum.js';
+const CAST=[['ghost','jester','librarian','scientist'],['librarian','ghost','scientist','jester'],['scientist','jester','ghost','librarian'],['jester','scientist','ghost']];
 const behavior=()=>({spawned:false,spawnDelay:0,attackTime:0,idleTime:0,scale:1});
-export function makeGhosts(level){const n=[4,4,4,3][level];return Array.from({length:n},(_,i)=>({...behavior(),id:i,x:180+(i%3)*410,y:205+Math.floor(i/3)*190,homeX:180+(i%3)*410,homeY:205+Math.floor(i/3)*190,phase:i*2.4,radius:75,progress:0,caught:false,opacity:0,available:false,kind:level===1&&i===0?'librarian':i%3===1?'librarian':'ghost',hue:i%3===2?55:0,boss:false,round:0,escape:0,age:0,spawnDelay:.5+i*2.6}));}
+export function makeGhosts(level){const n=[4,4,4,3][level];return Array.from({length:n},(_,i)=>({...behavior(),id:i,x:180+(i%3)*410,y:205+Math.floor(i/3)*190,homeX:180+(i%3)*410,homeY:205+Math.floor(i/3)*190,phase:i*2.4,radius:75,progress:0,caught:false,opacity:0,available:false,kind:CAST[level][i],hue:0,boss:false,round:0,escape:0,age:0,spawnDelay:.5+i*2.6}));}
 export function makeBoss(){return {...behavior(),id:99,x:1030,y:265,homeX:640,homeY:260,phase:0,radius:145,progress:0,caught:false,opacity:0,available:false,kind:'boss',hue:0,boss:true,round:0,escape:1.3,age:0};}
 export function updateGhost(g,dt,time,level,vacuum,locked,onCatch,onBreak,onEvent=()=>{},canAttack=true){
  if(g.caught)return;
@@ -25,13 +26,13 @@ export function updateGhost(g,dt,time,level,vacuum,locked,onCatch,onBreak,onEven
  }else {
    g.progress=0;
    if(g.available&&!g.attackTime)g.idleTime+=dt;
-   if(canAttack&&g.available&&!g.attackTime&&g.idleTime>=11+(g.boss?3:g.id*2)){
+   if(canAttack&&g.available&&!g.attackTime&&g.idleTime>=5+(g.boss?1:g.id*.8)){
      g.attackTime=.001;g.attackX=g.x;g.attackY=g.y;g.idleTime=0;onEvent('attack',g);
    }
  }
  let approach=0;
- if(g.attackTime){g.attackTime+=dt;approach=Math.sin(Math.min(1,g.attackTime/3.2)*Math.PI)**2;
-   if(g.attackTime>=3.2){g.attackTime=0;g.idleTime=0;approach=0;}}
+ if(g.attackTime){g.attackTime+=dt;approach=Math.sin(Math.min(1,g.attackTime/2.2)*Math.PI)**2;
+   if(g.attackTime>=2.2){g.attackTime=0;g.idleTime=0;approach=0;}}
  g.scale+=((1+approach*(g.boss?.35:.65))-g.scale)*(1-Math.exp(-dt*8));
  const p=g.progress,tip=vacuum.tip;
  // Broad room-scale paths. Capture freezes the flight anchor for forgiving aim.
@@ -44,6 +45,6 @@ export function updateGhost(g,dt,time,level,vacuum,locked,onCatch,onBreak,onEven
  const ty=hy*(1-pull)+tip.y*pull+Math.cos(time*21)*p*(1-p)*20;
  const ease=1-Math.exp(-dt*(held?7:2.4));
  let dx=(clamp(tx,75,1205)-g.x)*ease,dy=(clamp(ty,145,590)-g.y)*ease;
- if(!held){const distance=Math.hypot(dx,dy),limit=dt*(g.escape>0?210:g.attackTime?230:88);if(distance>limit){dx*=limit/distance;dy*=limit/distance;}}
+ if(!held){const distance=Math.hypot(dx,dy),limit=dt*(g.escape>0?210:g.attackTime?360:88);if(distance>limit){dx*=limit/distance;dy*=limit/distance;}}
  g.x+=dx;g.y+=dy;
 }
