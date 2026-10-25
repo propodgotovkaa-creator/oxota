@@ -13,7 +13,7 @@ export class Renderer{
    if(cleared){this.glow(650,280,650,'#ffc96b',.13);}
  }
  beam(v,time){if(!v.active)return;const c=this.ctx,t=v.tip;c.save();c.translate(t.x,t.y);c.rotate(v.angle);const grad=c.createLinearGradient(0,0,900,0);grad.addColorStop(0,'#aeffe577');grad.addColorStop(.5,'#70ecd21b');grad.addColorStop(1,'#70ecd200');c.fillStyle=grad;c.beginPath();c.moveTo(0,-25);c.lineTo(920,-245);c.lineTo(920,245);c.lineTo(0,25);c.closePath();c.fill();for(let i=0;i<45;i++){const f=(i/45+1-(time*.55)%1)%1;const x=f*850,y=Math.sin(i*9.1+time*4)*(22+x*.2);c.strokeStyle=`rgba(161,255,230,${(1-f)*.65})`;c.lineWidth=1.4;c.beginPath();c.moveTo(x,y);c.lineTo(x+14+f*20,y+Math.sin(time*8+i)*4);c.stroke();}c.restore();this.glow(t.x,t.y,80,'#8fffe8',.2);}
- ghost(g,v,time){if(g.caught)return;const c=this.ctx,img=this.images[g.kind],p=g.progress,size=g.radius*2.2;const h=size*(img.height/img.width);c.save();c.globalAlpha=g.opacity*.91;if(g.hue)c.filter=`hue-rotate(${g.hue}deg)`;
+ ghost(g,v,time){if(g.caught||!g.spawned)return;const c=this.ctx,img=this.images[g.kind],p=g.progress,size=g.radius*2.2*(g.scale||1);const h=size*(img.height/img.width);c.save();c.globalAlpha=g.opacity*.91;if(g.hue)c.filter=`hue-rotate(${g.hue}deg)`;
   // Horizontal texture bands follow a curved spine. The tail reaches the nozzle
   // before the head, then the whole ghost winds into a narrow corkscrew.
   const tip=v.tip;const slices=p>0?52:24;
